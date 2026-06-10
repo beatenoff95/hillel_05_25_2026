@@ -46,7 +46,17 @@ car_data = {
 }
 search_criteria = (2017, 1.6, 36000)
 
-cars=car_data
-for cars in car_data:
-    if cars == search_criteria:
-      print(cars)
+min_year, min_engine_volume, max_price = search_criteria
+
+found_cars = []
+
+for brand, car_info in car_data.items():
+    color, year, engine_volume, car_type, price = car_info
+
+    if year >= min_year and engine_volume >= min_engine_volume and price <= max_price:
+        found_cars.append((brand, color, year, engine_volume, car_type, price))
+
+found_cars = sorted(found_cars, key=lambda car: car[-1])
+
+for car in found_cars[:5]:
+    print(car)
