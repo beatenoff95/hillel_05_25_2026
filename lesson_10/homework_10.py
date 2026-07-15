@@ -1,117 +1,77 @@
-from abc import ABC, abstractmethod
-from math import pi, sqrt
+import logging
+from unittest import TestCase, main
 
 
-class Employee:
-    def __init__(self, name, salary):
-        self.name = name
-        self.salary = salary
+def log_event(username: str, status: str):
+    """
+    Logs a login event.
+
+    status:
+    * success - logged as info
+    * expired - logged as warning
+    * failed - logged as error
+    """
+    log_message = f"Login event - Username: {username}, Status: {status}"
+
+    logging.basicConfig(
+        filename="login_system.log",
+        level=logging.INFO,
+        format="%(asctime)s - %(message)s",
+    )
+    logger = logging.getLogger("log_event")
+
+    if status == "success":
+        logger.info(log_message)
+    elif status == "expired":
+        logger.warning(log_message)
+    else:
+        logger.error(log_message)
 
 
-class Manager(Employee):
-    def __init__(self, name, salary, department):
-        Employee.__init__(self, name, salary)
-        self.department = department
+class TestLogEvent(TestCase):
+    def test_success_status_logs_info_message(self):
+        with self.assertLogs("log_event", level="INFO") as log_records:
+            log_event("alice", "success")
 
-
-class Developer(Employee):
-    def __init__(self, name, salary, programming_language):
-        Employee.__init__(self, name, salary)
-        self.programming_language = programming_language
-
-
-class TeamLead(Manager, Developer):
-    def __init__(self, name, salary, department, programming_language, team_size):
-        Manager.__init__(self, name, salary, department)
-        Developer.__init__(self, name, salary, programming_language)
-        self.team_size = team_size
-
-
-def test_team_lead_attributes():
-    team_lead = TeamLead("Ivan", 5000, "Development", "Python", 7)
-
-    assert hasattr(team_lead, "name")
-    assert hasattr(team_lead, "salary")
-    assert hasattr(team_lead, "department")
-    assert hasattr(team_lead, "programming_language")
-    assert hasattr(team_lead, "team_size")
-
-
-class Figure(ABC):
-    @abstractmethod
-    def get_area(self):
-        pass
-
-    @abstractmethod
-    def get_perimeter(self):
-        pass
-
-
-class Rectangle(Figure):
-    def __init__(self, width, height):
-        self.__width = width
-        self.__height = height
-
-    def get_area(self):
-        return self.__width * self.__height
-
-    def get_perimeter(self):
-        return 2 * (self.__width + self.__height)
-
-
-class Circle(Figure):
-    def __init__(self, radius):
-        self.__radius = radius
-
-    def get_area(self):
-        return pi * self.__radius ** 2
-
-    def get_perimeter(self):
-        return 2 * pi * self.__radius
-
-
-class Triangle(Figure):
-    def __init__(self, side_a, side_b, side_c):
-        self.__side_a = side_a
-        self.__side_b = side_b
-        self.__side_c = side_c
-
-    def get_area(self):
-        half_perimeter = self.get_perimeter() / 2
-        return sqrt(
-            half_perimeter
-            * (half_perimeter - self.__side_a)
-            * (half_perimeter - self.__side_b)
-            * (half_perimeter - self.__side_c)
+        self.assertEqual(
+            log_records.output,
+            ["INFO:log_event:Login event - Username: alice, Status: success"],
         )
 
-    def get_perimeter(self):
-        return self.__side_a + self.__side_b + self.__side_c
+    def test_expired_status_logs_warning_message(self):
+        with self.assertLogs("log_event", level="WARNING") as log_records:
+            log_event("bob", "expired")
 
+        self.assertEqual(
+            log_records.output,
+            ["WARNING:log_event:Login event - Username: bob, Status: expired"],
+        )
 
-class Square(Figure):
-    def __init__(self, side):
-        self.__side = side
+    def test_failed_status_logs_error_message(self):
+        with self.assertLogs("log_event", level="ERROR") as log_records:
+            log_event("charlie", "failed")
 
-    def get_area(self):
-        return self.__side ** 2
+        self.assertEqual(
+            log_records.output,
+            ["ERROR:log_event:Login event - Username: charlie, Status: failed"],
+        )
 
-    def get_perimeter(self):
-        return 4 * self.__side
+    def test_unknown_status_logs_error_message(self):
+        with self.assertLogs("log_event", level="ERROR") as log_records:
+            log_event("diana", "blocked")
+
+        self.assertEqual(
+            log_records.output,
+            ["ERROR:log_event:Login event - Username: diana, Status: blocked"],
+        )
+
+    def test_success_status_does_not_log_warning_or_error(self):
+        with self.assertLogs("log_event", level="INFO") as log_records:
+            log_event("eve", "success")
+
+        self.assertEqual(len(log_records.records), 1)
+        self.assertEqual(log_records.records[0].levelno, logging.INFO)
 
 
 if __name__ == "__main__":
-    test_team_lead_attributes()
-    print("TeamLead has all required attributes.")
-
-    figures = [
-        Rectangle(4, 6),
-        Circle(5),
-        Triangle(3, 4, 5),
-        Square(7),
-    ]
-
-    for figure in figures:
-        print(f"{figure.__class__.__name__}:")
-        print(f"Area: {figure.get_area():.2f}")
-        print(f"Perimeter: {figure.get_perimeter():.2f}")
+    main()
