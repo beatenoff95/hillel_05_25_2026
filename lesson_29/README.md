@@ -9,45 +9,28 @@ Pytest tests verify the database connection and CRUD operations.
 - `test_homework_29_1.py` - tests for PostgreSQL connection, insert, update, delete and select.
 - `requirements.txt` - Python dependencies.
 - `Dockerfile` - application image.
+- `docker-compose.yml` - PostgreSQL, application and test services.
 
-## Docker commands
+## Docker Compose commands
 
 Run all commands from the `lesson_29` directory.
 
+Build the application image:
+
 ```bash
-docker network create homework29-network
+docker compose build
 ```
 
+Run PostgreSQL and the application:
+
 ```bash
-docker run --name homework29-postgres \
-  --network homework29-network \
-  -e POSTGRES_DB=homework29 \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5432:5432 \
-  -d postgres:16
+docker compose up app
 ```
 
-```bash
-docker build -t homework29-app .
-```
-
-Run the application:
+Run PostgreSQL and tests inside Docker:
 
 ```bash
-docker run --rm \
-  --network homework29-network \
-  -e DATABASE_URL=postgresql://postgres:postgres@homework29-postgres:5432/homework29 \
-  homework29-app
-```
-
-Run tests inside Docker:
-
-```bash
-docker run --rm \
-  --network homework29-network \
-  -e DATABASE_URL=postgresql://postgres:postgres@homework29-postgres:5432/homework29 \
-  homework29-app pytest -v
+docker compose run --rm tests
 ```
 
 Expected result:
@@ -59,6 +42,5 @@ Expected result:
 ## Cleanup
 
 ```bash
-docker rm -f homework29-postgres
-docker network rm homework29-network
+docker compose down -v
 ```
