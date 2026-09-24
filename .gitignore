@@ -50,6 +50,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+lesson_30/allure-results/
 
 # Translations
 *.mo
